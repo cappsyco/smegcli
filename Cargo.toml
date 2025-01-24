@@ -1,0 +1,11 @@
+[package]
+name = "smegcli"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+reqwest = "0.12.12"
+serde = "1.0.217"
+serde_json = "1.0.137"
+tokio = { version = "1.43.0", features = ["full"] }
+viuer = "0.9.1"
