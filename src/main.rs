@@ -10,7 +10,7 @@ fn main() {
                 Ok(_file) => {
                     let conf = Config {
                         absolute_offset: false,
-                        width: Some(65),
+                        width: Some(55),
                         ..Default::default()
                     };
 
