@@ -1,3 +1,4 @@
+use colored::Colorize;
 use reqwest;
 use serde_json;
 use viuer::{print_from_file, Config};
@@ -5,31 +6,47 @@ use viuer::{print_from_file, Config};
 fn main() {
     match fetch() {
         Ok(meme) => {
-            let mut frame = std::fs::File::create("smeg.jpg").unwrap();
-            reqwest::blocking::get(meme.get_frameurl().as_str().unwrap())
-                .unwrap()
-                .copy_to(&mut frame)
-                .unwrap();
+            match cache_image(&meme) {
+                Ok(_file) => {
+                    let conf = Config {
+                        absolute_offset: false,
+                        width: Some(65),
+                        ..Default::default()
+                    };
 
-            let conf = Config {
-                absolute_offset: false,
-                width: Some(50),
-                ..Default::default()
-            };
-            print_from_file("smeg.jpg", &conf).expect("Image printing failed.");
+                    println!("");
+                    print_from_file("smeg.jpg", &conf).expect("Image printing failed.");
+                }
+                Err(err) => {
+                    println!("Error with image: {}", err);
+                }
+            }
 
             println!("");
-            println!("{}", meme.get_series().as_str().unwrap());
-            println!("{}", meme.get_episode().as_str().unwrap());
-            println!("{}", meme.get_quote().as_str().unwrap());
-            println!("{}", meme.get_frameurl().as_str().unwrap());
-            println!("{}", meme.get_memelaburl().as_str().unwrap());
+            println!("{}", meme.get_quote().as_str().unwrap().bold().green());
             println!("");
+            println!(
+                "{} - {}",
+                meme.get_series()
+                    .as_str()
+                    .unwrap()
+                    .replace("Series", "Red Dwarf")
+                    .red(),
+                meme.get_episode().as_str().unwrap().purple(),
+            );
 
+            println!(
+                "{}",
+                meme.get_memelaburl()
+                    .as_str()
+                    .unwrap()
+                    .color("blue")
+                    .underline()
+            );
             println!("");
         }
         Err(err) => {
-            eprintln!("Handled error: {}", err);
+            println!("Something went wrong: {}", err);
         }
     }
 }
@@ -67,8 +84,6 @@ async fn fetch() -> Result<Smegameme, Box<dyn std::error::Error>> {
         .json::<serde_json::Value>()
         .await?;
 
-    println!("{}", smeg_response["response"]["series"].as_str().unwrap());
-
     Ok(Smegameme {
         series: smeg_response["response"]["series"].clone(),
         episode: smeg_response["response"]["episode"].clone(),
@@ -76,4 +91,14 @@ async fn fetch() -> Result<Smegameme, Box<dyn std::error::Error>> {
         frameurl: smeg_response["response"]["frame_url"].clone(),
         memelaburl: smeg_response["response"]["memelaburl"].clone(),
     })
+}
+
+fn cache_image(meme: &Smegameme) -> Result<std::fs::File, Box<dyn std::error::Error>> {
+    let mut frame = std::fs::File::create("smeg.jpg").unwrap();
+    reqwest::blocking::get(meme.get_frameurl().as_str().unwrap())
+        .unwrap()
+        .copy_to(&mut frame)
+        .unwrap();
+
+    Ok(frame)
 }
