@@ -2,6 +2,10 @@
 name = "smegcli"
 version = "0.1.0"
 edition = "2021"
+authors = ["Jonathan Capps"]
+description = "Fetch a random Red Dwarf frame and quote from The Smega-Drive into your terminal"
+repository = "https://github.com/cappsyco/smegcli"
+license = "MIT"
 
 [dependencies]
 colored = "3.0.0"
